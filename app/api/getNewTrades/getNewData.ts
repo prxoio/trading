@@ -1,36 +1,14 @@
-
+import { ITrading212, Trading212 } from "interfaces/ITrading212"
 import mongoose from "mongoose"
 import fetch from "node-fetch"
 
 type Trading212Data = any
 
-// Define a schema for your data
-const trading212Schema = new mongoose.Schema({
-  // Define the schema according to the structure of Trading212Data
-  // Example:
-  ticker: String,
-  quantity: Number,
-  averagePrice: Number,
-  currentPrice: Number,
-  ppl: Number,
-  fxPpl: Number,
-  initialFillDate: String,
-  frontend: String,
-  maxBuy: Number,
-  maxSell: Number,
-  pieQuantity: Number,
-  // ... other fields
-})
-const Trading212 = mongoose.model('Trading212', trading212Schema);
-
 export async function fetchAndStoreOpenPositions(apiKey: string) {
   // Connect to MongoDB Atlas
   // Replace <username>, <password>, <clustername>, and <dbname> with your MongoDB Atlas details
-  const mongoDBURL =
-    "mongodb+srv://admin:5HqwOQPWUoWkIfMg@directory.j1fxdy9.mongodb.net/tradingData"
-  await mongoose.connect(mongoDBURL)
-  
-  await Trading212.deleteMany({});
+  await mongoose.connect(`${process.env.MONGO_DB_URL}tradingData`)
+  await Trading212.deleteMany({})
 
   // Fetch open positions from Trading212 API
   const response = await fetch(
@@ -38,7 +16,7 @@ export async function fetchAndStoreOpenPositions(apiKey: string) {
     {
       method: "GET",
       headers: {
-        Authorization: "23300779ZPFpxuGQcrLAkJZGURTCMjQQGJwus",
+        Authorization: `${process.env.T212_API_KEY}`,
       },
     }
   )
@@ -46,7 +24,6 @@ export async function fetchAndStoreOpenPositions(apiKey: string) {
   if (!response.ok) {
     throw new Error(`Failed to fetch data: ${response.statusText}`)
   }
-
 
   const data: Trading212Data = await response.json()
 
@@ -71,5 +48,6 @@ export async function fetchAndStoreOpenPositions(apiKey: string) {
     await newPosition.save()
   }
 
-  console.log("Data stored successfully in MongoDB Atlas")
+  console.log("New data stored successfully in MongoDB Atlas")
+  return response.status
 }

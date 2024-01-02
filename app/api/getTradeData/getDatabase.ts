@@ -1,16 +1,12 @@
-import exp from "constants"
 import { ITrading212, Trading212 } from "interfaces/ITrading212"
 import mongoose from "mongoose"
-
-// MongoDB connection URL
-const mongoDBURL = "mongodb+srv://admin:5HqwOQPWUoWkIfMg@directory.j1fxdy9.mongodb.net/tradingData"
 
 // Function to get all documents from the Trading212 collection
 export async function getAllTrading212Data(): Promise<ITrading212[]> {
   try {
     // Connect to the database if not already connected
     if (mongoose.connection.readyState === 0) {
-      await mongoose.connect(mongoDBURL)
+      await mongoose.connect(`${process.env.MONGO_DB_URL}tradingData`)
     }
 
     // Retrieve all documents
@@ -23,4 +19,3 @@ export async function getAllTrading212Data(): Promise<ITrading212[]> {
     throw error
   }
 }
-

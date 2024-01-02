@@ -1,9 +1,7 @@
-import { useEffect } from "react"
-import Link from "next/link"
-import { ReloadIcon } from "@radix-ui/react-icons"
+"use client"
 
-import { siteConfig } from "@/config/site"
-import { Button, buttonVariants } from "@/components/ui/button"
+import { useEffect, useState } from "react"
+
 import {
   Table,
   TableBody,
@@ -15,23 +13,34 @@ import {
   TableRow,
 } from "@/components/ui/table"
 
+import RefreshDataButton from "./RefreshDataButton"
 
-//dynamic import 
-import dynamic from 'next/dynamic'
-import RefreshDataButton from "@/components/clientComponents/RefreshDataButton"
-import { getAllTrading212Data } from "./database/getStoredPositions"
+export default function IndexPage() {
+  const [data, setData] = useState<any[]>([]) // Provide a type for the data state variable
+const [response, setResponse] = useState(0)
 
+  useEffect(() => {
+    const getData = async () => {
+      const response = await fetch("/api/getTradeData")
+      const data = await response.json()
+      setData(data)
+    }
+    getData()
+  }, [])
 
-export default async function IndexPage() {
-  const invoices = await getAllTrading212Data()
+  const RefreshData = async () => {
+    const response = await fetch("/api/getTradeData")
+    const data = await response.json()
+    setData(data)
+  }
 
   return (
     <section className="container grid items-center justify-center gap-6 pb-8 pt-6 md:py-10">
       <div className="jus flex min-w-[700px] max-w-[980px] flex-col items-center gap-2">
-        <RefreshDataButton />
-
+        
+        <RefreshDataButton response={RefreshData} />
         <Table>
-          <TableCaption>A list of your recent invoices.</TableCaption>
+          <TableCaption>A list of your recent data.</TableCaption>
           <TableHeader>
             <TableRow>
               <TableHead className="w-[100px]">TICKER</TableHead>
@@ -41,13 +50,13 @@ export default async function IndexPage() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {invoices.map((invoice) => (
-              <TableRow key={invoice.ticker}>
-                <TableCell className="font-medium">{invoice.ticker}</TableCell>
-                <TableCell>{invoice.quantity}</TableCell>
-                <TableCell>{invoice.currentPrice / 100}</TableCell>
+            {data.map((item) => (
+              <TableRow key={item.ticker}>
+                <TableCell className="font-medium">{item.ticker}</TableCell>
+                <TableCell>{item.quantity}</TableCell>
+                <TableCell>{item.currentPrice / 100}</TableCell>
                 <TableCell className="text-right">
-                  {invoice.quantity * (invoice.currentPrice / 100)}
+                  {item.quantity * (item.currentPrice / 100)}
                 </TableCell>
               </TableRow>
             ))}
