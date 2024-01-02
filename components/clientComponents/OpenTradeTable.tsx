@@ -17,7 +17,7 @@ import RefreshDataButton from "./RefreshDataButton"
 
 export default function IndexPage() {
   const [data, setData] = useState<any[]>([]) // Provide a type for the data state variable
-const [response, setResponse] = useState(0)
+  const [response, setResponse] = useState(0)
 
   useEffect(() => {
     const getData = async () => {
@@ -37,8 +37,9 @@ const [response, setResponse] = useState(0)
   return (
     <section className="container grid items-center justify-center gap-6 pb-8 pt-6 md:py-10">
       <div className="jus flex min-w-[700px] max-w-[980px] flex-col items-center gap-2">
-        
-        <RefreshDataButton response={RefreshData} />
+        <div className="flex w-full justify-end">
+          <RefreshDataButton response={RefreshData} />
+        </div>{" "}
         <Table>
           <TableCaption>A list of your recent data.</TableCaption>
           <TableHeader>
