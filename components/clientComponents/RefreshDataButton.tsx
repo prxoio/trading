@@ -68,7 +68,7 @@ const RefreshDataButton: React.FC<RefreshDataButtonProps> = ({ response }) => {
       </Alert>
 
       <Button
-        className="h-12 w-14"
+        className="h-12 w-16"
         variant="outline"
         size="icon"
         onClick={refreshData}

@@ -4,7 +4,6 @@ import { useEffect, useState } from "react"
 import { ITrading212 } from "@/interfaces/ITrading212"
 import { response } from "express"
 import { IInstrumentSchema } from "interfaces/IMetadata"
-import { set } from "mongoose"
 
 import {
   Table,
@@ -17,14 +16,17 @@ import {
   TableRow,
 } from "@/components/ui/table"
 
+import CalculateTotal from "./CalculateTotal"
+import ConvertCurrency from "./Currency"
 import FetchTickerMetadata from "./GetMetadata"
 import RefreshDataButton from "./RefreshDataButton"
-import ConvertCurrency from "./Currency"
+import Chart from "./Chart"
 
 export default function IndexPage() {
   const [data, setData] = useState([] as ITrading212[])
   const [metadata, setMetadata] = useState([] as IInstrumentSchema[])
-
+  const [currencyData, setCurrencyData] = useState([] as any)
+  const [baseCurrency, setBaseCurrency] = useState("GBP")
   useEffect(() => {
     fetch("/api/getTradeData")
       .then((response) => response.json())
@@ -50,20 +52,57 @@ export default function IndexPage() {
     const metadatanew = metadata.find((item) => item.ticker === ticker)
     return metadatanew?.shortName
   }
+  const getTickerName = (ticker: string) => {
+    const metadatanew = metadata.find((item) => item.ticker === ticker)
+    //maximum 24 characters
+    const name = metadatanew?.name || ticker
+    if (name.length > 24) {
+      return name.substring(0, 22) + "..."
+    } else return name
+  }
+
+  useEffect(() => {
+    const options = {
+      method: "GET",
+      headers: {
+        apikey: "fca_live_m2boGNbKZaOdEtD6ZneuH0ovkUdSayCVOIh0g1bn",
+      },
+    }
+
+    fetch(
+      `https://api.freecurrencyapi.com/v1/latest?currencies=GBP%2CEUR%2CUSD%2CCAD%2CAUD&base_currency=${baseCurrency}`,
+      options
+    )
+      .then((response) => response.json())
+      .then((data) => setCurrencyData(data))
+      .catch((error) => console.error("Error fetching data:", error))
+  }, [baseCurrency])
 
   return (
-    <section className="container grid items-center justify-center gap-6 pb-8 pt-6 md:py-10">
-      <div className="jus flex min-w-[700px] max-w-[980px] flex-col items-center gap-2">
+    <section className="container grid items-center justify-center gap-4 pb-4 pt-6 md:py-4">
+      <div className="jus flex min-w-[460px] max-w-[1020px] flex-col items-center gap-2">
+      <div className="flex w-full justify-end mt-0 pt-0 mb-4">
+        <Chart />
+
+        </div>
         <div className="flex w-full justify-end">
           <RefreshDataButton response={refreshData} />
+          <CalculateTotal
+            documents={data}
+            metadata={metadata}
+            baseCurrency={baseCurrency}
+            currencyData={currencyData}
+          />
         </div>{" "}
         <Table>
           <TableCaption>A list of your recent data.</TableCaption>
           <TableHeader>
             <TableRow>
-              <TableHead className="w-[100px]">TICKER</TableHead>
+              <TableHead>Ticker</TableHead>
+              <TableHead className="w-[205px]">Name</TableHead>
               <TableHead>Qty</TableHead>
-              <TableHead>Price</TableHead>
+              <TableHead className="text-right">Price</TableHead>
+              <TableHead>Quote Price</TableHead>
               <TableHead className="text-right">Amount</TableHead>
             </TableRow>
           </TableHeader>
@@ -72,25 +111,65 @@ export default function IndexPage() {
               <TableRow key={item.ticker}>
                 <TableCell className="font-medium">
                   {getTickerMetadata(item.ticker) || item.ticker}
-                  {/*                   <FetchTickerMetadata
-                    ticker={item.ticker}
-                    dataId={"shortName"}
-                  /> */}
+                </TableCell>
+                <TableCell className="font-medium">
+                  {getTickerName(item.ticker) || item.ticker}
                 </TableCell>
                 <TableCell>{item.quantity.toFixed(4)}</TableCell>
-                <TableCell>{(item.currentPrice / 100).toFixed(2)}
-                <ConvertCurrency ticker={item.ticker} documents={data} metadata={metadata} />
-                </TableCell>
                 <TableCell className="text-right">
-                  {(item.quantity * (item.currentPrice / 100)).toFixed(4)}
+                  <p style={{ alignSelf: "center" }}>
+                    <ConvertCurrency
+                      ticker={item.ticker}
+                      documents={data}
+                      metadata={metadata}
+                      baseCurrency={baseCurrency}
+                      currencyData={currencyData}
+                    />
+                  </p>
+                </TableCell>
+                <TableCell>
+                  <p
+                    className="text-xs font-light"
+                    style={{ alignSelf: "center" }}
+                  >
+                    [
+                    <ConvertCurrency
+                      ticker={item.ticker}
+                      documents={data}
+                      metadata={metadata}
+                      baseCurrency={baseCurrency}
+                      currencyData={currencyData}
+                      formatOnly={true}
+                    />
+                    ]
+                  </p>
+                </TableCell>
+
+                <TableCell className="text-right">
+                  <ConvertCurrency
+                    ticker={item.ticker}
+                    documents={data}
+                    metadata={metadata}
+                    baseCurrency={baseCurrency}
+                    currencyData={currencyData}
+                    total={true}
+                  />
                 </TableCell>
               </TableRow>
             ))}
           </TableBody>
           <TableFooter>
             <TableRow>
-              <TableCell colSpan={3}>Total</TableCell>
-              <TableCell className="text-right">$2,500.00</TableCell>
+              <TableCell colSpan={5}>Total</TableCell>
+              <TableCell className="text-right font-bold">
+                <CalculateTotal
+                  documents={data}
+                  metadata={metadata}
+                  baseCurrency={baseCurrency}
+                  currencyData={currencyData}
+                  plain={true}
+                />
+              </TableCell>
             </TableRow>
           </TableFooter>
         </Table>

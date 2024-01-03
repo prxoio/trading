@@ -17,12 +17,17 @@ const instrumentMetadataSchema = new mongoose.Schema(
   },
   { strict: false }
 )
-const Metadata = mongoose.model("Metadata", instrumentMetadataSchema)
+
+let Metadata: mongoose.Model<any>
+
+if (mongoose.models.Metadata) {
+  Metadata = mongoose.model("Metadata")
+} else {
+  Metadata = mongoose.model("Metadata", instrumentMetadataSchema)
+}
 mongoose.connect(`${process.env.MONGO_DB_URL}tradingData`)
 
 export async function processTickers(documents: any) {
-  await Metadata.deleteMany({})
-
   try {
     for (const document of documents) {
       const processData = await getSearch(document.ticker)
@@ -55,9 +60,8 @@ export async function processTickers(documents: any) {
     console.error("Error processing tickers:", error)
   } finally {
     // Disconnect from MongoDB after processing
-console.log("Done processing tickers")
-
-}
+    console.log("Done processing tickers")
+  }
 }
 
 async function getSearch(ticker: string) {

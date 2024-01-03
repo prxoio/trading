@@ -31,5 +31,4 @@ export interface ITrading212 extends Document {
   maxBuy: number
   maxSell: number
   pieQuantity: number
-  // ... other fields
 }
