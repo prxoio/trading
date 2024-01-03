@@ -4,6 +4,7 @@ import { useEffect, useState } from "react"
 import { ITrading212 } from "@/interfaces/ITrading212"
 import { response } from "express"
 import { IInstrumentSchema } from "interfaces/IMetadata"
+import { set } from "mongoose"
 
 import {
   Table,
@@ -17,16 +18,19 @@ import {
 } from "@/components/ui/table"
 
 import CalculateTotal from "./CalculateTotal"
+import Chart from "./Chart"
 import ConvertCurrency from "./Currency"
 import FetchTickerMetadata from "./GetMetadata"
 import RefreshDataButton from "./RefreshDataButton"
-import Chart from "./Chart"
+import TradingViewTickers from "./TickersTV"
 
 export default function IndexPage() {
   const [data, setData] = useState([] as ITrading212[])
   const [metadata, setMetadata] = useState([] as IInstrumentSchema[])
   const [currencyData, setCurrencyData] = useState([] as any)
   const [baseCurrency, setBaseCurrency] = useState("GBP")
+  const [chartList, setChartList] = useState([] as any)
+
   useEffect(() => {
     fetch("/api/getTradeData")
       .then((response) => response.json())
@@ -78,12 +82,21 @@ export default function IndexPage() {
       .catch((error) => console.error("Error fetching data:", error))
   }, [baseCurrency])
 
+  useEffect(() => {
+    const chartdata = metadata.map((item) => [
+      item.name,
+      `${item.shortName}|1M`,
+    ])
+    const stringify =  JSON.stringify(chartdata)
+    console.log(stringify)
+    setChartList(chartdata)
+  }, [metadata])
+
   return (
     <section className="container grid items-center justify-center gap-4 pb-4 pt-6 md:py-4">
       <div className="jus flex min-w-[460px] max-w-[1020px] flex-col items-center gap-2">
-      <div className="flex w-full justify-end mt-0 pt-0 mb-4">
-        <Chart />
-
+        <div className="mb-6 mt-0 flex w-full justify-end pt-0">
+          <Chart data={chartList} />
         </div>
         <div className="flex w-full justify-end">
           <RefreshDataButton response={refreshData} />
