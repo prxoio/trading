@@ -31,11 +31,7 @@ const RefreshDataButton: React.FC<RefreshDataButtonProps> = ({ response }) => {
     }
   }
 
-  useEffect(() => {
-    if (status === 200) {
-      console.log("API Success", status)
-    }
-  }, [status])
+
 
   return (
     <>
