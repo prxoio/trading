@@ -31,8 +31,6 @@ const RefreshDataButton: React.FC<RefreshDataButtonProps> = ({ response }) => {
     }
   }
 
-
-
   return (
     <>
       <Alert
