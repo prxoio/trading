@@ -2,9 +2,7 @@
 
 import { useEffect, useState } from "react"
 import { ITrading212 } from "@/interfaces/ITrading212"
-import { response } from "express"
 import { IInstrumentSchema } from "interfaces/IMetadata"
-import { set } from "mongoose"
 
 import {
   Table,
@@ -20,9 +18,7 @@ import {
 import CalculateTotal from "./CalculateTotal"
 import Chart from "./Chart"
 import ConvertCurrency from "./Currency"
-import FetchTickerMetadata from "./GetMetadata"
 import RefreshDataButton from "./RefreshDataButton"
-import TradingViewTickers from "./TickersTV"
 
 export default function IndexPage() {
   const [data, setData] = useState([] as ITrading212[])
@@ -87,7 +83,7 @@ export default function IndexPage() {
       item.name,
       `${item.shortName}|1M`,
     ])
-    const stringify =  JSON.stringify(chartdata)
+    const stringify = JSON.stringify(chartdata)
     console.log(stringify)
     setChartList(chartdata)
   }, [metadata])
@@ -95,9 +91,9 @@ export default function IndexPage() {
   return (
     <section className="container grid items-center justify-center gap-4 pb-4 pt-6 md:py-4">
       <div className="jus flex min-w-[460px] max-w-[1020px] flex-col items-center gap-2">
-        <div className="mb-6 mt-0 flex w-full justify-end pt-0">
+{/*         <div className="mb-6 mt-0 flex w-full justify-end pt-0">
           <Chart data={chartList} />
-        </div>
+        </div> */}
         <div className="flex w-full justify-end">
           <RefreshDataButton response={refreshData} />
           <CalculateTotal

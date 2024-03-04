@@ -80,11 +80,7 @@ const ConvertCurrency: React.FC<FetchTickerProps> = ({
       style: "currency",
       currency: baseCurrency,
     })
-    return (
-      <>
-        {formattedTotal}
-      </>
-    )
+    return <>{formattedTotal}</>
   } else {
     return <>{formattedPrice}</>
   }
